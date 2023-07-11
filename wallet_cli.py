@@ -25,6 +25,12 @@ def new_account(ctx, account, atype, amount, limit):
         json_manager.write_json(data)
         print(f"new account created with id {new_id}")
 
+@wallet_cli.command()
+def accounts():
+    data = json_manager.read_json()
+    accounts = data['accounts']
+    for account in accounts:
+        print(f"{account['id']} - {account['account']} - {account['type']}' - {account['amount']} - {account['limit']}")
 
 @wallet_cli.command()
 @click.option('--amount', required=True, help='Amount of the bill')
@@ -42,6 +48,7 @@ def add_bill(ctx, amount, date, detail):
         data['bills'].append(new_reg)
         json_manager.write_json(data)
         print(f"new bill added with id {new_id}")
+    
 
 if __name__ == '__main__':
     wallet_cli()
