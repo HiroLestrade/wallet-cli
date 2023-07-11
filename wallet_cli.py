@@ -16,15 +16,14 @@ def wallet_cli():
 def new_account(ctx, account, atype, amount, limit):
     if not account or not atype or not amount:
         ctx.fail('Account, atype and amount are required')
-    else:
-        data = json_manager.read_json()
-        new_id = len(data['accounts']) + 1
+    data = json_manager.read_json()
+    new_id = len(data['accounts']) + 1
         
-        new_reg = {'id': new_id, 'account': account, 'type': atype, 'amount': float(amount), 'limit': float(limit)} if limit != None else {'id': new_id, 'account': account, 'type': atype, 'amount': float(amount), 'limit': limit}
+    new_reg = {'id': new_id, 'account': account, 'type': atype, 'amount': float(amount), 'limit': float(limit)} if limit != None else {'id': new_id, 'account': account, 'type': atype, 'amount': float(amount), 'limit': limit}
 
-        data['accounts'].append(new_reg)
-        json_manager.write_json(data)
-        print(f"new account created with id {new_id}")
+    data['accounts'].append(new_reg)
+    json_manager.write_json(data)
+    print(f"new account created with id {new_id}")
 
 
 @wallet_cli.command()
@@ -34,54 +33,55 @@ def new_account(ctx, account, atype, amount, limit):
 @click.option('--account', required=True, help='Account target')
 @click.pass_context
 def add_bill(ctx, amount, date, detail, account):
-    if not amount or not date or not detail:
-        ctx.fail('Amount, date and detail are required')
-    else:
-        data = json_manager.read_json()
-        new_id = len(data['bills']) + 1
-        new_reg = {'id': new_id, 'amount': float(
-            amount), 'date': date, 'detail': detail, 'account': account}
+    if not amount or not date or not detail or not account:
+        ctx.fail('Amount, date, detail and account are required')
+    data = json_manager.read_json()
+    new_id = len(data['bills']) + 1
+    new_reg = {'id': new_id, 'amount': float(amount), 'date': date, 'detail': detail, 'account': account}
 # *******charge the amount in the account*********************************************
-        for element in data['accounts']:
-            if element['account'] == account:
-                element['amount'] -= float(amount)
+    for element in data['accounts']:
+        if element['account'] == account:
+            element['amount'] -= float(amount)
 # ************************************************************************************
-        data['bills'].append(new_reg)
-        json_manager.write_json(data)
-        print(f"new bill added with id {new_id} to account {account}")
+    data['bills'].append(new_reg)
+    json_manager.write_json(data)
+    print(f"new bill added with id {new_id} to account {account}")
 
 
 @wallet_cli.command()
 @click.option('--id', required=True, help='Id of bill to remove')
-def remove_bill(id):
+@click.pass_context
+def remove_bill(ctx, id):
+    if not id:
+        ctx.fail('Id is required')
     data = json_manager.read_json()
     bills = data['bills']
     bill = next((x for x in bills if x['id'] == int(id)), None)
     if bill is None:
         print('Bill not found')
-    else:
+        return
 # *******discharge the amount in the account*******************************************
-        for element in data['accounts']:
-            if element['account'] == bill['account']:
-                element['amount'] += float(bill['amount'])
+    for element in data['accounts']:
+        if element['account'] == bill['account']:
+            element['amount'] += float(bill['amount'])
 # ************************************************************************************
-        data['bills'].remove(bill)
-        json_manager.write_json(data)
-        print(f"remove bill {id} success")
-
-        reasign_ids(data, 'bills')
+    data['bills'].remove(bill)
+    json_manager.write_json(data)
+    print(f"remove bill {id} success")
+    reasign_ids(data, 'bills')
 
 
 @wallet_cli.command()
 @click.option('--field', required=True, help='accounts, bills or services')
 @click.pass_context
 def read_data(ctx, field):
+    if not field:
+        ctx.fail('Field is required')
     data = json_manager.read_json()
     regs = data[field]
     for element in regs:
         if field == 'accounts':
-            print(
-                f"{element['id']} - {element['account']} - {element['type']} - {element['amount']} - {element['limit']}")
+            print(f"{element['id']} - {element['account']} - {element['type']} - {element['amount']} - {element['limit']}")
         elif field == 'bills':
             print(
                 f"{element['id']} - {element['amount']} - {element['date']} - {element['detail']} - {element['account']}")
