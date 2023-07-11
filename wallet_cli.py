@@ -25,6 +25,7 @@ def new_account(ctx, account, atype, amount, limit):
         json_manager.write_json(data)
         print(f"new account created with id {new_id}")
 
+
 @wallet_cli.command()
 @click.option('--amount', required=True, help='Amount of the bill')
 @click.option('--date', required=True, help='Date of the bill')
@@ -37,16 +38,36 @@ def add_bill(ctx, amount, date, detail, account):
     else:
         data = json_manager.read_json()
         new_id = len(data['bills']) + 1
-        new_reg = {'id': new_id, 'amount': float(amount), 'date': date, 'detail': detail, 'account':account}
-
+        new_reg = {'id': new_id, 'amount': float(
+            amount), 'date': date, 'detail': detail, 'account': account}
+# *******charge the amount in the account*********************************************
         for element in data['accounts']:
             if element['account'] == account:
                 element['amount'] -= float(amount)
-
+# ************************************************************************************
         data['bills'].append(new_reg)
         json_manager.write_json(data)
         print(f"new bill added with id {new_id} to account {account}")
-    
+
+@wallet_cli.command()
+@click.option('--id', required=True, help='Id of bill to remove')
+def remove_bill(id):
+    data = json_manager.read_json()
+    bills = data['bills']
+    bill = next((x for x in bills if x['id'] == int(id)), None)
+    if bill is None:
+        print('Bill not found')
+    else:
+        for element in data['accounts']:
+            if element['account'] == bill['account']:
+                element['amount'] += float(bill['amount'])
+
+        data['bills'].remove(bill)
+        json_manager.write_json(data)
+        print(f"remove bill {id} success")
+
+
+
 @wallet_cli.command()
 @click.option('--field', required=True, help='accounts, bills or services')
 @click.pass_context
@@ -55,10 +76,13 @@ def read_data(ctx, field):
     regs = data[field]
     for element in regs:
         if field == 'accounts':
-            print(f"{element['id']} - {element['account']} - {element['type']}' - {element['amount']} - {element['limit']}")
+            print(
+                f"{element['id']} - {element['account']} - {element['type']}' - {element['amount']} - {element['limit']}")
         elif field == 'bills':
-            print(f"{element['id']} - {element['amount']} - {element['date']} - {element['detail']} - {element['account']}")
-        #TODO: add services
+            print(
+                f"{element['id']} - {element['amount']} - {element['date']} - {element['detail']} - {element['account']}")
+        # TODO: add services
+
 
 if __name__ == '__main__':
     wallet_cli()
