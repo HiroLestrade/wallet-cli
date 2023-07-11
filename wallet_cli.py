@@ -49,6 +49,7 @@ def add_bill(ctx, amount, date, detail, account):
         json_manager.write_json(data)
         print(f"new bill added with id {new_id} to account {account}")
 
+
 @wallet_cli.command()
 @click.option('--id', required=True, help='Id of bill to remove')
 def remove_bill(id):
@@ -58,14 +59,16 @@ def remove_bill(id):
     if bill is None:
         print('Bill not found')
     else:
+# *******discharge the amount in the account*******************************************
         for element in data['accounts']:
             if element['account'] == bill['account']:
                 element['amount'] += float(bill['amount'])
-
+# ************************************************************************************
         data['bills'].remove(bill)
         json_manager.write_json(data)
         print(f"remove bill {id} success")
 
+        reasign_ids(data, 'bills')
 
 
 @wallet_cli.command()
@@ -83,6 +86,11 @@ def read_data(ctx, field):
                 f"{element['id']} - {element['amount']} - {element['date']} - {element['detail']} - {element['account']}")
         # TODO: add services
 
+def reasign_ids(data, field):
+    data_length = len(data[field])
+    for i in range(data_length):
+        data[field][i]['id'] = i + 1
+    json_manager.write_json(data)
 
 if __name__ == '__main__':
     wallet_cli()
