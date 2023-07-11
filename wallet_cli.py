@@ -26,19 +26,6 @@ def new_account(ctx, account, atype, amount, limit):
         print(f"new account created with id {new_id}")
 
 @wallet_cli.command()
-@click.option('--field', required=True, help='accounts, bills or services')
-@click.pass_context
-def read_data(ctx, field):
-    data = json_manager.read_json()
-    regs = data[field]
-    for element in regs:
-        if field == 'accounts':
-            print(f"{element['id']} - {element['account']} - {element['type']}' - {element['amount']} - {element['limit']}")
-        elif field == 'bills':
-            print(f"{element['id']} - {element['amount']} - {element['date']} - {element['detail']} - {element['account']}")
-        #TODO: add services
-
-@wallet_cli.command()
 @click.option('--amount', required=True, help='Amount of the bill')
 @click.option('--date', required=True, help='Date of the bill')
 @click.option('--detail', required=True, help='Detail of the bill')
@@ -51,10 +38,27 @@ def add_bill(ctx, amount, date, detail, account):
         data = json_manager.read_json()
         new_id = len(data['bills']) + 1
         new_reg = {'id': new_id, 'amount': float(amount), 'date': date, 'detail': detail, 'account':account}
+
+        for element in data['accounts']:
+            if element['account'] == account:
+                element['amount'] -= float(amount)
+
         data['bills'].append(new_reg)
         json_manager.write_json(data)
-        print(f"new bill added with id {new_id}")
+        print(f"new bill added with id {new_id} to account {account}")
     
+@wallet_cli.command()
+@click.option('--field', required=True, help='accounts, bills or services')
+@click.pass_context
+def read_data(ctx, field):
+    data = json_manager.read_json()
+    regs = data[field]
+    for element in regs:
+        if field == 'accounts':
+            print(f"{element['id']} - {element['account']} - {element['type']}' - {element['amount']} - {element['limit']}")
+        elif field == 'bills':
+            print(f"{element['id']} - {element['amount']} - {element['date']} - {element['detail']} - {element['account']}")
+        #TODO: add services
 
 if __name__ == '__main__':
     wallet_cli()
