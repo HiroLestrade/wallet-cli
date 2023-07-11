@@ -9,7 +9,7 @@ def wallet_cli():
 
 @wallet_cli.command()
 @click.option('--account',  required=True, help='Name account')
-@click.option('--atype',    required=True, help='Account type: cash, credit, debit or departamental')
+@click.option('--atype',    required=True, help='Account type: cash, credit, voucher, debit or departamental')
 @click.option('--amount',   required=True, help='Available money')
 @click.option('--limit',                   help='Limit in case of credit or departamental')
 @click.pass_context
