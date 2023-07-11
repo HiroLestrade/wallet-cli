@@ -26,11 +26,17 @@ def new_account(ctx, account, atype, amount, limit):
         print(f"new account created with id {new_id}")
 
 @wallet_cli.command()
-def accounts():
+@click.option('--field', required=True, help='accounts, bills or services')
+@click.pass_context
+def read_data(ctx, field):
     data = json_manager.read_json()
-    accounts = data['accounts']
-    for account in accounts:
-        print(f"{account['id']} - {account['account']} - {account['type']}' - {account['amount']} - {account['limit']}")
+    regs = data[field]
+    for element in regs:
+        if field == 'accounts':
+            print(f"{element['id']} - {element['account']} - {element['type']}' - {element['amount']} - {element['limit']}")
+        elif field == 'bills':
+            print(f"{element['id']} - {element['amount']} - {element['date']} - {element['detail']} - {element['account']}")
+        #TODO: add services
 
 @wallet_cli.command()
 @click.option('--amount', required=True, help='Amount of the bill')
@@ -38,13 +44,13 @@ def accounts():
 @click.option('--detail', required=True, help='Detail of the bill')
 @click.option('--account', required=True, help='Account target')
 @click.pass_context
-def add_bill(ctx, amount, date, detail):
+def add_bill(ctx, amount, date, detail, account):
     if not amount or not date or not detail:
         ctx.fail('Amount, date and detail are required')
     else:
         data = json_manager.read_json()
         new_id = len(data['bills']) + 1
-        new_reg = {'id': new_id, 'amount': amount, 'date': date, 'detail': detail, 'account':account}
+        new_reg = {'id': new_id, 'amount': float(amount), 'date': date, 'detail': detail, 'account':account}
         data['bills'].append(new_reg)
         json_manager.write_json(data)
         print(f"new bill added with id {new_id}")
