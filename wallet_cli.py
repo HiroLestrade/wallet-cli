@@ -19,8 +19,9 @@ def new_account(ctx, account, atype, amount, limit):
     else:
         data = json_manager.read_json()
         new_id = len(data['accounts']) + 1
-        new_reg = {'id': new_id, 'account': account, 'type': atype,
-                   'amount': float(amount), 'limit': float(limit)}
+        
+        new_reg = {'id': new_id, 'account': account, 'type': atype, 'amount': float(amount), 'limit': float(limit)} if limit != None else {'id': new_id, 'account': account, 'type': atype, 'amount': float(amount), 'limit': limit}
+
         data['accounts'].append(new_reg)
         json_manager.write_json(data)
         print(f"new account created with id {new_id}")
@@ -80,7 +81,7 @@ def read_data(ctx, field):
     for element in regs:
         if field == 'accounts':
             print(
-                f"{element['id']} - {element['account']} - {element['type']}' - {element['amount']} - {element['limit']}")
+                f"{element['id']} - {element['account']} - {element['type']} - {element['amount']} - {element['limit']}")
         elif field == 'bills':
             print(
                 f"{element['id']} - {element['amount']} - {element['date']} - {element['detail']} - {element['account']}")
