@@ -5,7 +5,7 @@ def read_json():
     #If the file doesn't exist, 
     if not os.path.isfile('data.json'):
         with open('data.json', 'w') as file:
-            json.dump({'cuentas': [], 'gastos': [], 'servicios': []}, file)
+            json.dump({'accounts': [], 'bills': [], 'services': []}, file)
     #Then, read the file
     with open('data.json', 'r') as file:
         data = json.load(file)
@@ -13,7 +13,7 @@ def read_json():
     return data
 
 def write_json(data):
-    with open('data.json', 'w') as f:
-        json.dump(data, f)
+    with open('data.json', 'w') as file:
+        json.dump(data, file)
 
 __all__ = ['read_json', 'write_json']
