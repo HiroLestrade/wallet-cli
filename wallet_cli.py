@@ -87,6 +87,24 @@ def read_data(ctx, field):
                 f"{element['id']} - {element['amount']} - {element['date']} - {element['detail']} - {element['account']}")
         # TODO: add services
 
+@wallet_cli.command()
+@click.option('--amount', required=True, help='Amount to transfer')
+@click.option('--origin', required=True, help='Account from')
+@click.option('--destination', required=True, help='Account to')
+@click.pass_context
+def transfer(ctx, amount, origin, destination):
+    if not amount or not origin or not destination:
+        ctx.fail('Amount, origin and destination required')
+    data = json_manager.read_json()
+    accounts = data['accounts']
+    for account in accounts:
+        if account['account'] == origin:
+            account['amount'] -= float(amount)
+        if account['account'] == destination:
+            account['amount'] += float(amount)
+    json_manager.write_json(data)
+    print(f'Amount {amount} removed from {origin} and added to {destination} success')
+
 def reasign_ids(data, field):
     data_length = len(data[field])
     for i in range(data_length):
