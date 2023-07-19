@@ -78,9 +78,11 @@ def read_data(field):
 
     for element in regs:
         if field == 'accounts':
-            print(f"{element['id']} - {element['account']} - {element['type']} - {element['amount']} - {element['limit']}")
+            print(
+                f"{element['id']} - {element['account']} - {element['type']} - {element['amount']} - {element['limit']}")
         elif field == 'bills':
-            print(f"{element['id']} - {element['amount']} - {element['date']} - {element['detail']} - {element['account']}")
+            print(
+                f"{element['id']} - {element['amount']} - {element['date']} - {element['detail']} - {element['account']}")
         # TODO: add services
 
 
@@ -98,7 +100,47 @@ def transfer(amount, origin, destination):
         if account['account'] == destination:
             account['amount'] += float(amount)
     json_manager.write_json(data)
-    print(f"Amount {amount} removed from {origin} and added to {destination} success")
+    print(
+        f"Amount {amount} removed from {origin} and added to {destination} success")
+
+
+@wallet_cli.command()
+@click.option('--amount', required=True, type=float, help='Amount of the income')
+@click.option('--date', required=True, help='Date of the income')
+@click.option('--detail', required=True, help='Detail of the income')
+@click.option('--account', required=True, help='Account target')
+def add_income(amount, date, detail, account):
+    data = json_manager.read_json()
+
+    new_id = len(data['incomes'])
+    new_reg = {'id': new_id, 'amount': amount, 'date': date, 'detail': detail, 'account':account}
+    for element in data['accounts']:
+        if element['account'] == account:
+            pass
+            element['amount'] += amount
+    data['incomes'].append(new_reg)
+
+    json_manager.write_json(data)
+    print(f"new income added with id {new_id} to account {account}")
+
+@wallet_cli.command()
+@click.option('--id', required=True, type=int, help='Id of income to remove')
+def remove_income(id):
+    data = json_manager.read_json()
+
+    incomes = data['incomes']
+    income = next((x for x in incomes if x['id'] == id), None)
+    if income is None:
+        print('Income not found')
+        return
+    for element in data['accounts']:
+        if element['account'] == income['account']:
+            element['amount'] -= income['amount']
+    data['incomes'].remove(income)
+    data = reasign_ids(data, 'incomes')
+
+    json_manager.write_json(data)
+    print(f"remove income {id} success")
 
 
 def reasign_ids(data, field):
